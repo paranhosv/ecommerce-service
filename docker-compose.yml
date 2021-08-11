@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+  discount-service:
+    image: hashorg/hash-mock-discount-service
+  ecommerce-service:
+    image: ecommerce-service
+    depends_on:
+      - discount-service
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      DT_BLACK_FRIDAY: "2021-11-26, 2022-11-25"
+
