@@ -2,7 +2,7 @@ package com.victorparanhos.ecommerceservice.web.controllers.v1.products;
 
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.usecases.GetProducts;
-import com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductDTO;
+import com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
@@ -30,7 +30,7 @@ public class ProductsControllerTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private JacksonTester<List<ProductDTO>> jsonProducts;
+    private JacksonTester<List<ProductResponse>> jsonProducts;
 
     @MockBean
     private GetProducts getProducts;
@@ -57,6 +57,6 @@ public class ProductsControllerTests {
                 .execute();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isEqualTo(
-                jsonProducts.write(List.of(new ProductDTO(mockedProduct))).getJson());
+                jsonProducts.write(List.of(new ProductResponse(mockedProduct))).getJson());
     }
 }

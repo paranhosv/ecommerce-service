@@ -3,7 +3,7 @@ package com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 
-public class ProductDTO {
+public class ProductResponse {
 
     @JsonProperty("id")
     public Integer id;
@@ -20,7 +20,7 @@ public class ProductDTO {
     @JsonProperty("is_gift")
     public boolean isGift;
 
-    public ProductDTO(Product product) {
+    public ProductResponse(Product product) {
         this.id = product.getId();
         this.title = product.getTitle();
         this.description = product.getDescription();
