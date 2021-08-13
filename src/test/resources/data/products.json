@@ -1,0 +1,16 @@
+[
+	{
+		"id": 1,
+		"title": "Title One",
+		"description": "Description One",
+		"amount": 10000,
+		"is_gift": false
+	},
+	{
+		"id": 2,
+		"title": "Title Two",
+		"description": "Description Two",
+		"amount": 20000,
+		"is_gift": true
+	}
+]
