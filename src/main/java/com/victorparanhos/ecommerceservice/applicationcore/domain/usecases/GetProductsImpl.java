@@ -4,7 +4,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Produ
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGateway;
 
-import java.util.List;
+import java.util.Collection;
 
 public class GetProductsImpl implements GetProducts {
 
@@ -15,7 +15,7 @@ public class GetProductsImpl implements GetProducts {
     }
 
     @Override
-    public List<Product> execute() throws UnavailableDataException {
+    public Collection<Product> execute() throws UnavailableDataException {
         return productsGateway.getProducts();
     }
 }

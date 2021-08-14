@@ -3,9 +3,9 @@ package com.victorparanhos.ecommerceservice.infra.repositories;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.infra.entities.JsonFileProduct;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface ProductRepository {
 
-    List<JsonFileProduct> findAll() throws UnavailableDataException;
+    Collection<JsonFileProduct> findAll() throws UnavailableDataException;
 }

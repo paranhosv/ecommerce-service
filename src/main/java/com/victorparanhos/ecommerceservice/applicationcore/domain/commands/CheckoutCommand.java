@@ -1,15 +1,15 @@
 package com.victorparanhos.ecommerceservice.applicationcore.domain.commands;
 
-import java.util.List;
+import java.util.Collection;
 
 public class CheckoutCommand {
-    private final List<CheckoutItemCommand> checkoutItems;
+    private final Collection<CheckoutItemCommand> checkoutItems;
 
-    public CheckoutCommand(List<CheckoutItemCommand> checkoutItems) {
+    public CheckoutCommand(Collection<CheckoutItemCommand> checkoutItems) {
         this.checkoutItems = checkoutItems;
     }
 
-    public List<CheckoutItemCommand> getCheckoutItems() {
+    public Collection<CheckoutItemCommand> getCheckoutItems() {
         return checkoutItems;
     }
 }

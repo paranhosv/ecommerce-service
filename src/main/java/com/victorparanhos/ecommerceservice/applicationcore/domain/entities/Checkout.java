@@ -1,15 +1,15 @@
 package com.victorparanhos.ecommerceservice.applicationcore.domain.entities;
 
-import java.util.List;
+import java.util.Collection;
 
 public class Checkout {
 
     public final long totalAmount;
     public final long totalAmountWithDiscount;
     public final long totalDiscount;
-    public List<CheckoutItem> checkoutItems;
+    public Collection<CheckoutItem> checkoutItems;
 
-    public Checkout(List<CheckoutItem> checkoutItems) {
+    public Checkout(Collection<CheckoutItem> checkoutItems) {
         this.checkoutItems = checkoutItems;
         totalAmount = checkoutItems.stream()
                 .mapToLong(checkoutItem -> checkoutItem.getProduct().getAmount() * checkoutItem.getQuantity())

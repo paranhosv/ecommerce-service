@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Checkout;
 import com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductResponse;
 
-import java.util.List;
+import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
@@ -20,7 +20,7 @@ public class CheckoutResponse {
     public long totalDiscount;
 
     @JsonProperty("products")
-    public List<ProductResponse> productsResponse;
+    public Collection<ProductResponse> productsResponse;
 
     private CheckoutResponse(Checkout checkout) {
         totalAmount = checkout.totalAmount;

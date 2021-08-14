@@ -8,8 +8,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.Pro
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGateway;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import static java.util.stream.Collectors.*;
@@ -32,13 +31,13 @@ public class MakeCheckoutImpl implements MakeCheckout {
                         groupingBy(CheckoutItemCommand::getProductId, summingLong(CheckoutItemCommand::getQuantity))
                 );
 
-        List<CheckoutItem> checkoutItems = productsGateway.getProductsById(new ArrayList<>(productAndQuantity.keySet())).stream()
+        Collection<CheckoutItem> checkoutItems = productsGateway.getProductsById(productAndQuantity.keySet()).stream()
                 .map(product -> new CheckoutItem(product, productAndQuantity.get(product.getId())))
                 .collect(toList());
 
         // Check if checkout has not found products
         var foundProductIds = checkoutItems.stream().map(ci -> ci.getProduct().getId()).collect(toSet());
-        if(!productAndQuantity.keySet().stream().allMatch( i -> foundProductIds.contains(i))) {
+        if(!foundProductIds.containsAll(productAndQuantity.keySet())) {
             throw new ProductNotFoundException("One or more products were not found");
         }
 

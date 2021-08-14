@@ -8,8 +8,8 @@ import com.victorparanhos.ecommerceservice.infra.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
@@ -19,7 +19,7 @@ public class JsonProductsFileGateway implements ProductGateway {
     private ProductRepository repo;
 
     @Override
-    public List<Product> getProducts() throws UnavailableDataException {
+    public Collection<Product> getProducts() throws UnavailableDataException {
         return repo.findAll()
                 .stream()
                 .map(JsonFileProduct::toProduct)
@@ -27,10 +27,11 @@ public class JsonProductsFileGateway implements ProductGateway {
     }
 
     @Override
-    public List<Product> getProductsById(List<Long> productIds) throws UnavailableDataException {
+    public Collection<Product> getProductsById(Collection<Long> productIds) throws UnavailableDataException {
+        var productIdHash = new HashSet<>(productIds);
         return repo.findAll()
                 .stream()
-                .filter(jsonFileProduct -> new HashSet<>(productIds).contains(jsonFileProduct.id))
+                .filter(jsonFileProduct -> productIdHash.contains(jsonFileProduct.id))
                 .map(JsonFileProduct::toProduct)
                 .collect(toList());
     }

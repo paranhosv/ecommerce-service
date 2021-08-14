@@ -1,7 +1,6 @@
 package com.victorparanhos.ecommerceservice.infra.gateways;
 
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
-import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGateway;
 import com.victorparanhos.ecommerceservice.infra.entities.JsonFileProduct;
 import com.victorparanhos.ecommerceservice.infra.repositories.ProductRepository;
 import org.jeasy.random.EasyRandom;
@@ -23,7 +22,7 @@ public class JsonProductsFileGatewayTests {
     private final EasyRandom generator = new EasyRandom();
 
     @Autowired
-    private ProductGateway gateway;
+    private JsonProductsFileGateway gateway;
 
     @MockBean
     private ProductRepository repo;
@@ -54,6 +53,6 @@ public class JsonProductsFileGatewayTests {
                 .findAll();
         assertThat(getProductsResult)
                 .usingRecursiveComparison()
-                .isEqualTo(randomProduct);
+                .isEqualTo(List.of(randomProduct.toProduct()));
     }
 }

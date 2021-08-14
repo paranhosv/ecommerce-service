@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Collection;
 
 @Component
 public class JsonFileProductRepository implements ProductRepository {
@@ -19,10 +19,10 @@ public class JsonFileProductRepository implements ProductRepository {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final JavaType listType = mapper.getTypeFactory()
-            .constructCollectionType(List.class, JsonFileProduct.class);
+            .constructCollectionType(Collection.class, JsonFileProduct.class);
 
     @Override
-    public List<JsonFileProduct> findAll() throws UnavailableDataException {
+    public Collection<JsonFileProduct> findAll() throws UnavailableDataException {
         try {
             InputStream is = new ClassPathResource("data/products.json").getInputStream();
             return mapper.readValue(is, listType);

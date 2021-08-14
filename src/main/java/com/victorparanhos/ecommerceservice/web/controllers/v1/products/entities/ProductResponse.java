@@ -3,7 +3,7 @@ package com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 
-import java.util.List;
+import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,7 +32,7 @@ public class ProductResponse {
         this.isGift = product.isGift();
     }
 
-    public static List<ProductResponse> toProductsResponse(List<Product> products) {
+    public static Collection<ProductResponse> toProductsResponse(Collection<Product> products) {
         return products.stream()
                 .map(ProductResponse::new)
                 .collect(toList());

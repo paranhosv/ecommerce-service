@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -29,7 +29,7 @@ public class MakeCheckoutImplTests {
     @Test
     public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
-        given(productGateway.getProductsById(anyList())).willReturn(List.of(expectedProduct));
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1)
         ));
@@ -45,7 +45,7 @@ public class MakeCheckoutImplTests {
 
         then(productGateway)
                 .should(times(1))
-                .getProductsById(anyList());
+                .getProductsById(anyCollection());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -55,7 +55,7 @@ public class MakeCheckoutImplTests {
     public void executeShouldNotProcessProductsWithQuantity() throws UnavailableDataException, ProductNotFoundException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         var unexpectedProduct = new Product(2, "Title Two", "Description Two", 20_000L, false);
-        given(productGateway.getProductsById(anyList())).willReturn(List.of(expectedProduct));
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1),
                 new CheckoutItemCommand(2, 0)
@@ -72,7 +72,7 @@ public class MakeCheckoutImplTests {
 
         then(productGateway)
                 .should(times(1))
-                .getProductsById(anyList());
+                .getProductsById(anyCollection());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -82,7 +82,7 @@ public class MakeCheckoutImplTests {
     @Test
     public void executeShouldSumQuantitiesForDuplicateProducts() throws UnavailableDataException, ProductNotFoundException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
-        given(productGateway.getProductsById(anyList())).willReturn(List.of(expectedProduct));
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1),
                 new CheckoutItemCommand(1, 2)
@@ -99,7 +99,7 @@ public class MakeCheckoutImplTests {
 
         then(productGateway)
                 .should(times(1))
-                .getProductsById(anyList());
+                .getProductsById(anyCollection());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -108,7 +108,7 @@ public class MakeCheckoutImplTests {
     @Test
     public void executeShouldThrowProductNotFoundExceptionWhenOneOfTheProductsDoesNotExist() throws UnavailableDataException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
-        given(productGateway.getProductsById(anyList())).willReturn(List.of(expectedProduct));
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1),
                 new CheckoutItemCommand(10, 2)
@@ -119,6 +119,6 @@ public class MakeCheckoutImplTests {
         ).isInstanceOf(ProductNotFoundException.class);
         then(productGateway)
                 .should(times(1))
-                .getProductsById(anyList());
+                .getProductsById(anyCollection());
     }
 }

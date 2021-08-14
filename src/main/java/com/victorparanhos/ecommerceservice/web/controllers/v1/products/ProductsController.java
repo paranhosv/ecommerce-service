@@ -1,6 +1,5 @@
 package com.victorparanhos.ecommerceservice.web.controllers.v1.products;
 
-import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.usecases.GetProducts;
 import com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductResponse;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Collection;
 
 import static com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductResponse.toProductsResponse;
 
@@ -25,9 +24,9 @@ public class ProductsController {
 
     @RequestMapping(method = RequestMethod.GET, name = "/",
             produces = "application/json")
-    public List<ProductResponse> getProducts() throws UnavailableDataException {
+    public Collection<ProductResponse> getProducts() throws UnavailableDataException {
         logger.info("Received getProducts request");
-        List<Product> products = getProducts.execute();
+        var products = getProducts.execute();
         return toProductsResponse(products);
     }
 

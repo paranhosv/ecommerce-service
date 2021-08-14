@@ -2,10 +2,11 @@ package com.victorparanhos.ecommerceservice.utils;
 
 import com.victorparanhos.ecommerceservice.infra.entities.JsonFileProduct;
 
+import java.util.Collection;
 import java.util.List;
 
 public class JsonFileProductGenerator {
-    public static List<JsonFileProduct> jsonFileProductsToList() {
+    public static Collection<JsonFileProduct> jsonFileProductsToList() {
         JsonFileProduct product1 = new JsonFileProduct();
         product1.id = 1;
         product1.title = "Title One";
