@@ -8,4 +8,6 @@ import java.util.List;
 public interface ProductGateway {
 
     List<Product> getProducts() throws UnavailableDataException;
+
+    List<Product> getProductsById(List<Long> productIds) throws UnavailableDataException;
 }

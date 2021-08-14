@@ -19,6 +19,7 @@ repositories {
 dependencies {
 	implementation "io.springfox:springfox-boot-starter:3.0.0"
 	implementation 'org.springframework.boot:spring-boot-starter-web:2.5.3'
+	testImplementation 'org.jeasy:easy-random-core:5.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.3'
 }
 

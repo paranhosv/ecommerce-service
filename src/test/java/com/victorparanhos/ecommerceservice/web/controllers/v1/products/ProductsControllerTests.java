@@ -1,62 +1,71 @@
 package com.victorparanhos.ecommerceservice.web.controllers.v1.products;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.usecases.GetProducts;
 import com.victorparanhos.ecommerceservice.web.controllers.v1.products.entities.ProductResponse;
+import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureJsonTesters
 @WebMvcTest(controllers = ProductsController.class)
 public class ProductsControllerTests {
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    private final EasyRandom generator = new EasyRandom();
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private JacksonTester<List<ProductResponse>> jsonProducts;
 
     @MockBean
     private GetProducts getProducts;
 
     @Test
     public void getProductsShouldReturnAllProducts() throws Exception {
-        Product mockedProduct = new Product(
-                1,
-                "Title",
-                "Description",
-                1_000L,
-                false);
-        given(getProducts.execute())
-                .willReturn(List.of(mockedProduct));
+        var product = generator.nextObject(Product.class);
 
-        MockHttpServletResponse response = mockMvc.perform(
+        given(getProducts.execute())
+                .willReturn(List.of(product));
+
+        mockMvc.perform(
                         get("/v1/products")
                                 .accept(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
+                .andExpect(status().isOk())
+                .andExpect(content().json(mapper.writeValueAsString(List.of(new ProductResponse(product)))));
 
         then(getProducts)
                 .should(times(1))
                 .execute();
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isEqualTo(
-                jsonProducts.write(List.of(new ProductResponse(mockedProduct))).getJson());
+    }
+
+    @Test
+    public void getProductsShouldThrow500WhenDataIsUnavailable() throws Exception {
+        given(getProducts.execute())
+                .willThrow(new UnavailableDataException("Data unavailable"));
+
+        mockMvc.perform(
+                        get("/v1/products")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        then(getProducts)
+                .should(times(1))
+                .execute();
     }
 }

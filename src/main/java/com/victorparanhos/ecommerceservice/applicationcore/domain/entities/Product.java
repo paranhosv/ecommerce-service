@@ -1,13 +1,13 @@
 package com.victorparanhos.ecommerceservice.applicationcore.domain.entities;
 
 public class Product {
-    private final Integer id;
+    private final long id;
     private final String title;
     private final String description;
-    private final Long amount;
+    private final long amount;
     private final boolean isGift;
 
-    public Product(Integer id, String title, String description, Long amount, boolean isGift) {
+    public Product(long id, String title, String description, long amount, boolean isGift) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -15,7 +15,7 @@ public class Product {
         this.isGift = isGift;
     }
 
-    public Integer getId() {
+    public long getId() {
         return id;
     }
 
@@ -27,7 +27,7 @@ public class Product {
         return description;
     }
 
-    public Long getAmount() {
+    public long getAmount() {
         return amount;
     }
 

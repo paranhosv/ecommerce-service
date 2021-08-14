@@ -6,7 +6,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Produ
 public class JsonFileProduct {
 
     @JsonProperty("id")
-    public Integer id;
+    public long id;
 
     @JsonProperty("title")
     public String title;
@@ -15,7 +15,7 @@ public class JsonFileProduct {
     public String description;
 
     @JsonProperty("amount")
-    public Long amount;
+    public long amount;
 
     @JsonProperty("is_gift")
     public boolean isGift;
