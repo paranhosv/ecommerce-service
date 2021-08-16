@@ -5,6 +5,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.commands.Check
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Checkout;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.CheckoutItem;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
@@ -31,7 +32,8 @@ public class MakeCheckoutImplTests {
     private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway);
 
     @Test
-    public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException {
+    public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException,
+            DiscountServerException {
         var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
         var expectedProductTwo = new Product(2, "Title Two", "Description Two", 20_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProductOne, expectedProductTwo));
@@ -68,7 +70,8 @@ public class MakeCheckoutImplTests {
     }
 
     @Test
-    public void executeShouldNotProcessProductsWithQuantity() throws UnavailableDataException, ProductNotFoundException {
+    public void executeShouldNotProcessProductsWithQuantity() throws UnavailableDataException, ProductNotFoundException,
+            DiscountServerException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         var unexpectedProduct = new Product(2, "Title Two", "Description Two", 20_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
@@ -101,7 +104,40 @@ public class MakeCheckoutImplTests {
     }
 
     @Test
-    public void executeShouldSumQuantitiesForDuplicateProducts() throws UnavailableDataException, ProductNotFoundException {
+    public void executeShouldNotApplyDiscountOnDiscountServiceError() throws UnavailableDataException,
+            ProductNotFoundException, DiscountServerException {
+        var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
+        given(discountServiceGateway.getDiscount(anyInt())).willThrow(new DiscountServerException("Error"));
+        var cmd = new CheckoutCommand(List.of(
+                new CheckoutItemCommand(1, 1),
+                new CheckoutItemCommand(2, 0)
+        ));
+
+        var expectedCheckout = new Checkout(List.of(
+                new CheckoutItem(
+                        expectedProduct,
+                        1,
+                        0.0F
+                )
+        ));
+
+        var checkoutResult = useCase.execute(cmd);
+
+        then(productGateway)
+                .should(times(1))
+                .getProductsById(anyCollection());
+        then(discountServiceGateway)
+                .should(times(1))
+                .getDiscount(anyInt());
+        assertThat(checkoutResult)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedCheckout);
+    }
+
+    @Test
+    public void executeShouldSumQuantitiesForDuplicateProducts() throws UnavailableDataException,
+            ProductNotFoundException, DiscountServerException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
@@ -132,7 +168,8 @@ public class MakeCheckoutImplTests {
     }
 
     @Test
-    public void executeShouldThrowProductNotFoundExceptionWhenOneOfTheProductsDoesNotExist() throws UnavailableDataException {
+    public void executeShouldThrowProductNotFoundExceptionWhenOneOfTheProductsDoesNotExist()
+            throws UnavailableDataException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         var cmd = new CheckoutCommand(List.of(

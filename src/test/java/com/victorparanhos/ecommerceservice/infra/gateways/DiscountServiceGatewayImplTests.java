@@ -1,5 +1,6 @@
 package com.victorparanhos.ecommerceservice.infra.gateways;
 
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -9,44 +10,55 @@ import io.hash.discountservice.DiscountGrpc;
 import io.hash.discountservice.GetDiscountRequest;
 import io.hash.discountservice.GetDiscountResponse;
 import org.junit.Rule;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class DiscountServiceGatewayImplTests {
 
     @Rule
     public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
-    private DiscountGrpc.DiscountImplBase serviceImpl =
-            mock(DiscountGrpc.DiscountImplBase.class, delegatesTo(
-                    new DiscountGrpc.DiscountImplBase() {
-                         @Override
-                         public void getDiscount(GetDiscountRequest request, StreamObserver<GetDiscountResponse> respObserver) {
-                           respObserver.onNext(GetDiscountResponse.newBuilder().setPercentage(0.127F).build());
-                           respObserver.onCompleted();
-                         }
-                    }));
-
-    private DiscountGrpc.DiscountImplBase serviceErrorImpl =
-            mock(DiscountGrpc.DiscountImplBase.class, delegatesTo(
-                    new DiscountGrpc.DiscountImplBase() {
-                        // By default the client will receive Status.UNIMPLEMENTED for all RPCs.
-                    }));
-
-    private DiscountGrpc.DiscountBlockingStub stub;
-    private DiscountGrpc.DiscountBlockingStub stubError;
-
     private final DiscountServiceGatewayImpl gateway = new DiscountServiceGatewayImpl("test", 0);
 
-    @BeforeEach
-    public void setUp() throws Exception {
+    @Test
+    public void getDiscountShouldReturnDiscountPercentage() throws NoSuchFieldException, IllegalAccessException,
+            IOException, DiscountServerException {
+        var stub = setUpMockStub();
+        setStub(stub);
+
+        var response = gateway.getDiscount(1);
+        assertEquals(0.127F, response);
+    }
+
+    @Test
+    public void getDiscountShouldDiscountServerExceptionOnError() throws NoSuchFieldException, IllegalAccessException,
+            IOException {
+        var stubError = setUpMockErrorStub();
+        setStub(stubError);
+
+        assertThatThrownBy(() ->
+                gateway.getDiscount(1)
+        ).isInstanceOf(DiscountServerException.class);
+    }
+
+    private DiscountGrpc.DiscountBlockingStub setUpMockStub() throws IOException {
+        var serviceImpl =
+                mock(DiscountGrpc.DiscountImplBase.class, delegatesTo(
+                        new DiscountGrpc.DiscountImplBase() {
+                            @Override
+                            public void getDiscount(GetDiscountRequest request, StreamObserver<GetDiscountResponse> respObserver) {
+                                respObserver.onNext(GetDiscountResponse.newBuilder().setPercentage(0.127F).build());
+                                respObserver.onCompleted();
+                            }
+                        }));
+
         // Generate a unique in-process server name.
         String serverName = InProcessServerBuilder.generateName();
 
@@ -58,11 +70,16 @@ public class DiscountServiceGatewayImplTests {
         ManagedChannel channel = grpcCleanup.register(
                 InProcessChannelBuilder.forName(serverName).directExecutor().build());
 
-        // Create a HelloWorldClient using the in-process channel;
-        stub = DiscountGrpc.newBlockingStub(channel);
+        // Create a DiscountBlockingStub using the in-process channel;
+        return DiscountGrpc.newBlockingStub(channel);
+    }
 
-
-
+    private DiscountGrpc.DiscountBlockingStub setUpMockErrorStub() throws IOException {
+        var serviceErrorImpl =
+                mock(DiscountGrpc.DiscountImplBase.class, delegatesTo(
+                        new DiscountGrpc.DiscountImplBase() {
+                            // By default, the client will receive Status.UNIMPLEMENTED for all RPCs.
+                        }));
 
         // Generate a unique in-process server name.
         String serverNameError = InProcessServerBuilder.generateName();
@@ -73,22 +90,15 @@ public class DiscountServiceGatewayImplTests {
 
         // Create a client channel and register for automatic graceful shutdown.
         ManagedChannel channelError = grpcCleanup.register(
-                InProcessChannelBuilder.forName(serverName).directExecutor().build());
+                InProcessChannelBuilder.forName(serverNameError).directExecutor().build());
 
-        // Create a HelloWorldClient using the in-process channel;
-        stubError = DiscountGrpc.newBlockingStub(channelError);
+        // Create a DiscountBlockingStub using the in-process channel;
+        return DiscountGrpc.newBlockingStub(channelError);
     }
 
-    @Test
-    public void getDiscountShouldReturnDiscountPercentage() {
-        ArgumentCaptor<GetDiscountRequest> requestCaptor = ArgumentCaptor.forClass(GetDiscountRequest.class);
-
-        var response = stub.getDiscount(GetDiscountRequest.newBuilder().setProductID(1).build());
-
-        verify(serviceImpl)
-                .getDiscount(requestCaptor.capture(), ArgumentMatchers.any());
-        assertEquals(0.127F, response.getPercentage());
+    private void setStub(DiscountGrpc.DiscountBlockingStub stub) throws NoSuchFieldException, IllegalAccessException {
+        Field field = gateway.getClass().getDeclaredField("stub");
+        field.setAccessible(true);
+        field.set(gateway, stub);
     }
-
-    
 }

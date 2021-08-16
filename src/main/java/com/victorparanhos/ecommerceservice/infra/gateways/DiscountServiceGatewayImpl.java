@@ -1,5 +1,6 @@
 package com.victorparanhos.ecommerceservice.infra.gateways;
 
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -21,7 +22,7 @@ public class DiscountServiceGatewayImpl implements DiscountServiceGateway {
         stub = DiscountGrpc.newBlockingStub(channel);
     }
 
-    public float getDiscount(int productId) {
+    public float getDiscount(int productId) throws DiscountServerException {
         logger.info("Calling discount service to get discount for productId {}", productId);
         var request = GetDiscountRequest.newBuilder()
                 .setProductID(productId)
@@ -31,10 +32,9 @@ public class DiscountServiceGatewayImpl implements DiscountServiceGateway {
             logger.info("Discount for productId {} is {}", productId, discount);
             return discount;
         } catch (StatusRuntimeException e) {
-            logger.warn("RPC failed with status {}. Discount will be zero percent for productId {}",
-                    e.getStatus().getCode(),
-                    productId);
-            return 0;
+            logger.error("RPC failed with status {}",
+                    e.getStatus().getCode());
+            throw new DiscountServerException("gRPC method call failed");
         }
     }
 

@@ -4,6 +4,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.commands.Check
 import com.victorparanhos.ecommerceservice.applicationcore.domain.commands.CheckoutItemCommand;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Checkout;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.CheckoutItem;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
@@ -40,10 +41,20 @@ public class MakeCheckoutImpl implements MakeCheckout {
 
         logger.info("Getting products data");
         Collection<CheckoutItem> checkoutItems = productsGateway.getProductsById(productAndQuantity.keySet()).parallelStream()
-                .map(product -> new CheckoutItem(
-                        product,
-                        productAndQuantity.get(product.getId()),
-                        discountServiceGateway.getDiscount(product.getId())))
+                .map(product -> {
+                    var productDiscount = 0F;
+                    try {
+                        productDiscount = discountServiceGateway.getDiscount(product.getId());
+                    } catch (DiscountServerException e) {
+                        logger.warn("Discount for productId {} will be zero percent due to discount service exception",
+                                product.getId());
+                    }
+
+                    return new CheckoutItem(
+                            product,
+                            productAndQuantity.get(product.getId()),
+                            productDiscount);
+                })
                 .collect(toList());
 
         logger.info("Checking for not found products");
