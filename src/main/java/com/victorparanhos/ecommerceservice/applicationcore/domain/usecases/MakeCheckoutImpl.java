@@ -34,13 +34,13 @@ public class MakeCheckoutImpl implements MakeCheckout {
     @Override
     public Checkout execute(CheckoutCommand checkoutCmd) throws UnavailableDataException, ProductNotFoundException {
         logger.info("Executing checkout");
-        var productAndQuantity = normalizeCheckoutCommand(checkoutCmd);
+        var productsAndQuantities = normalizeCheckoutCommand(checkoutCmd);
 
         logger.info("Building checkout items retrieving products data and discounts");
-        var checkoutItems = buildCheckoutItems(productAndQuantity);
+        var checkoutItems = buildCheckoutItems(productsAndQuantities);
 
         logger.info("Checking for not found products");
-        var cmdProductIds = productAndQuantity.keySet();
+        var cmdProductIds = productsAndQuantities.keySet();
         if(!hasFoundAllProducts(cmdProductIds, checkoutItems)) {
             throw new ProductNotFoundException("One or more products were not found");
         }
@@ -61,9 +61,9 @@ public class MakeCheckoutImpl implements MakeCheckout {
                 );
     }
 
-    private Collection<CheckoutItem> buildCheckoutItems(Map<Integer, Long> productAndQuantity)
+    private Collection<CheckoutItem> buildCheckoutItems(Map<Integer, Long> productsAndQuantities)
             throws UnavailableDataException {
-        return productsGateway.getProductsById(productAndQuantity.keySet()).parallelStream()
+        return productsGateway.getProductsById(productsAndQuantities.keySet()).parallelStream()
                 .map(product -> {
                     var productDiscount = 0F;
                     try {
@@ -75,7 +75,7 @@ public class MakeCheckoutImpl implements MakeCheckout {
 
                     return new CheckoutItem(
                             product,
-                            productAndQuantity.get(product.getId()),
+                            productsAndQuantities.get(product.getId()),
                             productDiscount);
                 })
                 .collect(toList());
