@@ -6,14 +6,12 @@ import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGatew
 import com.victorparanhos.ecommerceservice.infra.entities.JsonFileProduct;
 import com.victorparanhos.ecommerceservice.infra.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashSet;
 
 import static java.util.stream.Collectors.toList;
 
-@Component
 public class JsonProductsFileGateway implements ProductGateway {
     @Autowired
     private ProductRepository repo;
@@ -27,7 +25,7 @@ public class JsonProductsFileGateway implements ProductGateway {
     }
 
     @Override
-    public Collection<Product> getProductsById(Collection<Long> productIds) throws UnavailableDataException {
+    public Collection<Product> getProductsById(Collection<Integer> productIds) throws UnavailableDataException {
         var productIdHash = new HashSet<>(productIds);
         return repo.findAll()
                 .stream()

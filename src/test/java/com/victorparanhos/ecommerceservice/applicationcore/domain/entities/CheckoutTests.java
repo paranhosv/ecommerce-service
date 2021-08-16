@@ -21,7 +21,11 @@ public class CheckoutTests {
                 items.stream()
                         .mapToLong(i -> i.getProduct().getAmount() * i.getQuantity())
                         .reduce(0, Long::sum));
-        assertThat(checkout.totalDiscount).isEqualTo(0L);
+        assertThat(checkout.totalDiscount).isEqualTo(
+                items.stream().mapToLong(checkoutItem ->
+                        (long) (checkoutItem.getProduct().getAmount() * checkoutItem.getDiscount()) * checkoutItem.getQuantity()
+                ).sum()
+        );
         assertThat(checkout.totalAmountWithDiscount).isEqualTo(checkout.totalAmount - checkout.totalDiscount);
     }
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CheckoutProduct {
 
     @JsonProperty("id")
-    public long id;
+    public int id;
 
     @JsonProperty("quantity")
     public long quantity;

@@ -11,5 +11,7 @@ services:
     ports:
       - 8080:8080
     environment:
+      DISCOUNT_SERVICE_HOSTNAME: "discount-service"
+      DISCOUNT_SERVICE_PORT: 50051
       DT_BLACK_FRIDAY: "2021-11-26, 2022-11-25"
 

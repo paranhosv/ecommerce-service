@@ -7,5 +7,5 @@ import java.util.Collection;
 
 public interface ProductGateway {
     Collection<Product> getProducts() throws UnavailableDataException;
-    Collection<Product> getProductsById(Collection<Long> productIds) throws UnavailableDataException;
+    Collection<Product> getProductsById(Collection<Integer> productIds) throws UnavailableDataException;
 }

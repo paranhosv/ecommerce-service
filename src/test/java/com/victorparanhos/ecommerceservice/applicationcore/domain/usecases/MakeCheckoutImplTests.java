@@ -7,6 +7,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Check
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
+import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGateway;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -24,20 +26,31 @@ import static org.mockito.Mockito.times;
 @SpringBootTest
 public class MakeCheckoutImplTests {
     private final ProductGateway productGateway = mock(ProductGateway.class);
-    private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway);
+    private final DiscountServiceGateway discountServiceGateway = mock(DiscountServiceGateway.class);
+
+    private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway);
 
     @Test
     public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException {
-        var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
-        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
+        var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
+        var expectedProductTwo = new Product(2, "Title Two", "Description Two", 20_000L, false);
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProductOne, expectedProductTwo));
+        given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
         var cmd = new CheckoutCommand(List.of(
-                new CheckoutItemCommand(1, 1)
+                new CheckoutItemCommand(1, 1),
+                new CheckoutItemCommand(2, 3)
         ));
 
         var expectedCheckout = new Checkout(List.of(
                 new CheckoutItem(
-                        expectedProduct,
-                        1
+                        expectedProductOne,
+                        1,
+                        0.1F
+                ),
+                new CheckoutItem(
+                        expectedProductTwo,
+                        3,
+                        0.1F
                 )
         ));
 
@@ -46,6 +59,9 @@ public class MakeCheckoutImplTests {
         then(productGateway)
                 .should(times(1))
                 .getProductsById(anyCollection());
+        then(discountServiceGateway)
+                .should(times(2))
+                .getDiscount(anyInt());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -56,6 +72,7 @@ public class MakeCheckoutImplTests {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         var unexpectedProduct = new Product(2, "Title Two", "Description Two", 20_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
+        given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1),
                 new CheckoutItemCommand(2, 0)
@@ -64,7 +81,8 @@ public class MakeCheckoutImplTests {
         var expectedCheckout = new Checkout(List.of(
                 new CheckoutItem(
                         expectedProduct,
-                        1
+                        1,
+                        0.1F
                 )
         ));
 
@@ -73,6 +91,9 @@ public class MakeCheckoutImplTests {
         then(productGateway)
                 .should(times(1))
                 .getProductsById(anyCollection());
+        then(discountServiceGateway)
+                .should(times(1))
+                .getDiscount(anyInt());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -83,6 +104,7 @@ public class MakeCheckoutImplTests {
     public void executeShouldSumQuantitiesForDuplicateProducts() throws UnavailableDataException, ProductNotFoundException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
+        given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
         var cmd = new CheckoutCommand(List.of(
                 new CheckoutItemCommand(1, 1),
                 new CheckoutItemCommand(1, 2)
@@ -91,7 +113,8 @@ public class MakeCheckoutImplTests {
         var expectedCheckout = new Checkout(List.of(
                 new CheckoutItem(
                         expectedProduct,
-                        3
+                        3,
+                        0.1F
                 )
         ));
 
@@ -100,6 +123,9 @@ public class MakeCheckoutImplTests {
         then(productGateway)
                 .should(times(1))
                 .getProductsById(anyCollection());
+        then(discountServiceGateway)
+                .should(times(1))
+                .getDiscount(anyInt());
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);

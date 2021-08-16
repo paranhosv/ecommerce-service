@@ -15,7 +15,11 @@ public class Checkout {
                 .mapToLong(checkoutItem -> checkoutItem.getProduct().getAmount() * checkoutItem.getQuantity())
                 .reduce(0, Long::sum);
 
-        totalDiscount = 0;
+        totalDiscount = checkoutItems.stream().mapToLong(checkoutItem -> {
+            var discountPerItem = checkoutItem.getProduct().getAmount() * checkoutItem.getDiscount();
+            return (long) discountPerItem * checkoutItem.getQuantity();
+        }).sum();
+
         totalAmountWithDiscount = totalAmount - totalDiscount;
     }
 }

@@ -1,6 +1,16 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.17'
+	}
+}
+
 plugins {
-	id 'org.springframework.boot' version '2.5.3'
+	id "com.google.protobuf" version "0.8.17"
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'org.springframework.boot' version '2.5.3'
 	id 'java'
 }
 
@@ -16,7 +26,20 @@ repositories {
 	mavenCentral()
 }
 
+def grpcVersion = '1.39.0'
+def protobufVersion = '3.17.3'
+def protocVersion = protobufVersion
 dependencies {
+	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+	implementation "io.grpc:grpc-stub:${grpcVersion}"
+	compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+
+	// examples/advanced need this for JsonFormat
+	implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+
+	runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+	testImplementation "io.grpc:grpc-testing:${grpcVersion}"
+
 	implementation "io.springfox:springfox-boot-starter:3.0.0"
 	implementation 'org.springframework.boot:spring-boot-starter-web:2.5.3'
 	testImplementation 'org.jeasy:easy-random-core:5.0.0'
@@ -25,4 +48,20 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:${protocVersion}"
+	}
+
+	plugins {
+		grpc {
+			artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+		}
+	}
+
+	generateProtoTasks {
+		all()*.plugins { grpc {} }
+	}
 }
