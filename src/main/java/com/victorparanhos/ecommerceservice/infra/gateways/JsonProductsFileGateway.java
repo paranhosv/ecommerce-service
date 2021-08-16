@@ -19,7 +19,7 @@ public class JsonProductsFileGateway implements ProductGateway {
     public Collection<Product> getProducts() throws UnavailableDataException {
         return repo.findAll()
                 .stream()
-                .map(jsonFileProduct -> jsonFileProduct.toProduct(true))
+                .map(jsonFileProduct -> jsonFileProduct.toProduct(jsonFileProduct.isGift))
                 .collect(toList());
     }
 

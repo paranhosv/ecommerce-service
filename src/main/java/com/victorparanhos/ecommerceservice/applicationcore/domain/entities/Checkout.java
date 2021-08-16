@@ -12,13 +12,12 @@ public class Checkout {
     public Checkout(Collection<CheckoutItem> checkoutItems) {
         this.checkoutItems = checkoutItems;
         totalAmount = checkoutItems.stream()
-                .mapToLong(checkoutItem -> checkoutItem.getProduct().getAmount() * checkoutItem.getQuantity())
-                .reduce(0, Long::sum);
+                .mapToLong(CheckoutItem::getTotalAmount)
+                .sum();
 
-        totalDiscount = checkoutItems.stream().mapToLong(checkoutItem -> {
-            var discountPerItem = checkoutItem.getProduct().getAmount() * checkoutItem.getDiscount();
-            return (long) discountPerItem * checkoutItem.getQuantity();
-        }).sum();
+        totalDiscount = checkoutItems.stream()
+                .mapToLong(CheckoutItem::getTotalDiscount)
+                .sum();
 
         totalAmountWithDiscount = totalAmount - totalDiscount;
     }

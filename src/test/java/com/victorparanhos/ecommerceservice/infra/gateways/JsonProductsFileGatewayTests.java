@@ -38,7 +38,9 @@ public class JsonProductsFileGatewayTests {
                 .findAll();
         assertThat(getProductsResult)
                 .usingRecursiveComparison()
-                .isEqualTo(jsonFileProducts);
+                .isEqualTo(jsonFileProducts.stream()
+                        .map(i -> i.toProduct(i.isGift))
+                        .collect(toList()));
     }
 
     @Test

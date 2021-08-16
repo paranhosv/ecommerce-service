@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class CheckoutRequest {
 
     @JsonProperty("products")
-    public Collection<CheckoutProduct> checkoutProducts;
+    public Collection<CheckoutProductRequest> checkoutProducts;
     
     public CheckoutCommand toCheckoutCommand() {
         var checkoutItems = checkoutProducts.stream().map(p -> new CheckoutItemCommand(

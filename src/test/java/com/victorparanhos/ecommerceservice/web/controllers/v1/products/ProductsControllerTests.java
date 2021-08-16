@@ -47,7 +47,7 @@ public class ProductsControllerTests {
                         get("/v1/products")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(List.of(new ProductResponse(product)))));
+                .andExpect(content().json(mapper.writeValueAsString(ProductResponse.toProductsResponse(List.of(product)))));
 
         then(getProducts)
                 .should(times(1))

@@ -29,7 +29,7 @@ import static org.mockito.Mockito.times;
 public class MakeCheckoutImplTests {
     private final ProductGateway productGateway = mock(ProductGateway.class);
     private final DiscountServiceGateway discountServiceGateway = mock(DiscountServiceGateway.class);
-    private Set<Date> blackFridays = new HashSet<>();
+    private final Set<Date> blackFridays = new HashSet<>();
 
     private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway, blackFridays);
 

@@ -11,7 +11,7 @@ public class CheckoutTests {
     private final EasyRandom generator = new EasyRandom();
 
     @Test
-    public void CheckoutShouldBeConstructedCorrectly() {
+    public void CheckoutShouldCalculateValuesOnConstruction() {
         var items = generator.objects(CheckoutItem.class, 5).collect(Collectors.toList());
 
         var checkout = new Checkout(items);
@@ -19,13 +19,12 @@ public class CheckoutTests {
         assertThat(checkout.checkoutItems).isEqualTo(items);
         assertThat(checkout.totalAmount).isEqualTo(
                 items.stream()
-                        .mapToLong(i -> i.getProduct().getAmount() * i.getQuantity())
-                        .reduce(0, Long::sum));
+                        .mapToLong(CheckoutItem::getTotalAmount)
+                        .sum());
         assertThat(checkout.totalDiscount).isEqualTo(
-                items.stream().mapToLong(checkoutItem ->
-                        (long) (checkoutItem.getProduct().getAmount() * checkoutItem.getDiscount()) * checkoutItem.getQuantity()
-                ).sum()
-        );
+                items.stream()
+                        .mapToLong(CheckoutItem::getTotalDiscount)
+                        .sum());
         assertThat(checkout.totalAmountWithDiscount).isEqualTo(checkout.totalAmount - checkout.totalDiscount);
     }
 }
