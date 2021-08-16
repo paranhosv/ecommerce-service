@@ -5,6 +5,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.commands.Check
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Checkout;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.CheckoutItem;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.EmptyBasketException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
@@ -32,9 +33,13 @@ public class MakeCheckoutImpl implements MakeCheckout {
     }
 
     @Override
-    public Checkout execute(CheckoutCommand checkoutCmd) throws UnavailableDataException, ProductNotFoundException {
+    public Checkout execute(CheckoutCommand checkoutCmd) throws UnavailableDataException,
+            ProductNotFoundException, EmptyBasketException {
         logger.info("Executing checkout");
         var productsAndQuantities = normalizeCheckoutCommand(checkoutCmd);
+        if(productsAndQuantities.isEmpty()) {
+            throw new EmptyBasketException("Must have at least one product in the basket to checkout");
+        }
 
         logger.info("Building checkout items retrieving products data and discounts");
         var checkoutItems = buildCheckoutItems(productsAndQuantities);

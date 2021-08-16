@@ -1,6 +1,7 @@
 package com.victorparanhos.ecommerceservice.web.controllers.v1.checkout;
 
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Checkout;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.EmptyBasketException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.usecases.MakeCheckout;
@@ -28,7 +29,7 @@ public class CheckoutController {
             produces = "application/json")
     public CheckoutResponse makeCheckout(
             @RequestBody CheckoutRequest req
-    ) throws UnavailableDataException, ProductNotFoundException {
+    ) throws UnavailableDataException, ProductNotFoundException, EmptyBasketException {
         logger.info("Received checkout request");
         Checkout checkout = makeCheckout.execute(req.toCheckoutCommand());
         return toCheckoutResponse(checkout);

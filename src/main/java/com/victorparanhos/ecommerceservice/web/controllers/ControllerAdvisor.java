@@ -1,5 +1,6 @@
 package com.victorparanhos.ecommerceservice.web.controllers;
 
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.EmptyBasketException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,17 @@ public class ControllerAdvisor {
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<Object> handleProductNotFoundException(
             ProductNotFoundException ex, WebRequest request) {
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmptyBasketException.class)
+    public ResponseEntity<Object> handleProductNotFoundException(
+            EmptyBasketException ex, WebRequest request) {
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());

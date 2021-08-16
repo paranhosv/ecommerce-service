@@ -6,6 +6,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Check
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.CheckoutItem;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.entities.Product;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.DiscountServerException;
+import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.EmptyBasketException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.ProductNotFoundException;
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
@@ -40,7 +41,7 @@ public class MakeCheckoutImplTests {
 
     @Test
     public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException,
-            DiscountServerException {
+            DiscountServerException, EmptyBasketException {
         var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
         var expectedProductTwo = new Product(2, "Title Two", "Description Two", 20_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProductOne, expectedProductTwo));
@@ -78,7 +79,7 @@ public class MakeCheckoutImplTests {
 
     @Test
     public void executeShouldReturnAllProductsAndGiftOnBlackFridays() throws UnavailableDataException,
-            ProductNotFoundException, DiscountServerException {
+            ProductNotFoundException, DiscountServerException, EmptyBasketException {
         blackFridays.add(getTodayDate());
         var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
         var expectedProductTwo = new Product(2, "Title Two", "Description Two", 0L, true);
@@ -120,7 +121,7 @@ public class MakeCheckoutImplTests {
 
     @Test
     public void executeShouldNotProcessProductsWithQuantity() throws UnavailableDataException, ProductNotFoundException,
-            DiscountServerException {
+            DiscountServerException, EmptyBasketException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         var unexpectedProduct = new Product(2, "Title Two", "Description Two", 20_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
@@ -154,7 +155,7 @@ public class MakeCheckoutImplTests {
 
     @Test
     public void executeShouldNotApplyDiscountOnDiscountServiceError() throws UnavailableDataException,
-            ProductNotFoundException, DiscountServerException {
+            ProductNotFoundException, DiscountServerException, EmptyBasketException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         given(discountServiceGateway.getDiscount(anyInt())).willThrow(new DiscountServerException("Error"));
@@ -186,7 +187,7 @@ public class MakeCheckoutImplTests {
 
     @Test
     public void executeShouldSumQuantitiesForDuplicateProducts() throws UnavailableDataException,
-            ProductNotFoundException, DiscountServerException {
+            ProductNotFoundException, DiscountServerException, EmptyBasketException {
         var expectedProduct = new Product(1, "Title One", "Description One", 10_000L, false);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProduct));
         given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
@@ -232,6 +233,18 @@ public class MakeCheckoutImplTests {
         then(productGateway)
                 .should(times(1))
                 .getProductsById(anyCollection());
+    }
+
+    @Test
+    public void executeShouldThrowEmptyBasketExceptionWhenThereIsNoProductsInTheBasket() {
+       var cmd = new CheckoutCommand(List.of(
+                new CheckoutItemCommand(1, 0),
+                new CheckoutItemCommand(10, 0)
+        ));
+
+        assertThatThrownBy(() ->
+                useCase.execute(cmd)
+        ).isInstanceOf(EmptyBasketException.class);
     }
 
     private Date getTodayDate() {
