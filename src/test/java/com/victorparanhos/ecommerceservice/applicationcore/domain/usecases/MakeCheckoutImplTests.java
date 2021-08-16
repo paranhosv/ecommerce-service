@@ -10,10 +10,11 @@ import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.Pro
 import com.victorparanhos.ecommerceservice.applicationcore.domain.exceptions.UnavailableDataException;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.DiscountServiceGateway;
 import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGateway;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,8 +29,14 @@ import static org.mockito.Mockito.times;
 public class MakeCheckoutImplTests {
     private final ProductGateway productGateway = mock(ProductGateway.class);
     private final DiscountServiceGateway discountServiceGateway = mock(DiscountServiceGateway.class);
+    private Set<Date> blackFridays = new HashSet<>();
 
-    private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway);
+    private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway, blackFridays);
+
+    @BeforeEach
+    public void resetBlackFriday() {
+        blackFridays.clear();
+    }
 
     @Test
     public void executeShouldReturnAllProducts() throws UnavailableDataException, ProductNotFoundException,
@@ -64,6 +71,48 @@ public class MakeCheckoutImplTests {
         then(discountServiceGateway)
                 .should(times(2))
                 .getDiscount(anyInt());
+        assertThat(checkoutResult)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedCheckout);
+    }
+
+    @Test
+    public void executeShouldReturnAllProductsAndGiftOnBlackFridays() throws UnavailableDataException,
+            ProductNotFoundException, DiscountServerException {
+        blackFridays.add(getTodayDate());
+        var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
+        var expectedProductTwo = new Product(2, "Title Two", "Description Two", 0L, true);
+        given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProductOne));
+        given(discountServiceGateway.getDiscount(anyInt())).willReturn(0.1F);
+        given(productGateway.getGifts()).willReturn(List.of(expectedProductTwo));
+        var cmd = new CheckoutCommand(List.of(
+                new CheckoutItemCommand(1, 1)
+        ));
+
+        var expectedCheckout = new Checkout(List.of(
+                new CheckoutItem(
+                        expectedProductOne,
+                        1,
+                        0.1F
+                ),
+                new CheckoutItem(
+                        expectedProductTwo,
+                        1,
+                        0.0F
+                )
+        ));
+
+        var checkoutResult = useCase.execute(cmd);
+
+        then(productGateway)
+                .should(times(1))
+                .getProductsById(anyCollection());
+        then(discountServiceGateway)
+                .should(times(1))
+                .getDiscount(anyInt());
+        then(productGateway)
+                .should(times(1))
+                .getGifts();
         assertThat(checkoutResult)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedCheckout);
@@ -183,5 +232,14 @@ public class MakeCheckoutImplTests {
         then(productGateway)
                 .should(times(1))
                 .getProductsById(anyCollection());
+    }
+
+    private Date getTodayDate() {
+        var calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 }

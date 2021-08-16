@@ -12,8 +12,7 @@ import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGatew
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
@@ -22,10 +21,14 @@ public class MakeCheckoutImpl implements MakeCheckout {
     private static final Logger logger = LoggerFactory.getLogger(MakeCheckoutImpl.class);
     private final ProductGateway productsGateway;
     private final DiscountServiceGateway discountServiceGateway;
+    private final Set<Date> blackFridays;
 
-    public MakeCheckoutImpl(ProductGateway productsGateway, DiscountServiceGateway discountServiceGateway) {
+    public MakeCheckoutImpl(ProductGateway productsGateway,
+                            DiscountServiceGateway discountServiceGateway,
+                            Set<Date> blackFridays) {
         this.productsGateway = productsGateway;
         this.discountServiceGateway = discountServiceGateway;
+        this.blackFridays = blackFridays;
     }
 
     @Override
@@ -63,7 +66,29 @@ public class MakeCheckoutImpl implements MakeCheckout {
             throw new ProductNotFoundException("One or more products were not found");
         }
 
+        addGiftTo(checkoutItems);
+
         logger.info("Returning checkout summary");
         return new Checkout(checkoutItems);
+    }
+
+    private void addGiftTo(Collection<CheckoutItem> checkoutItems) throws UnavailableDataException {
+        var calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        if(blackFridays.contains(calendar.getTime())) {
+            Random rand = new Random();
+            var giftProducts = productsGateway.getGifts();
+            giftProducts.stream()
+                    .skip(rand.nextInt(giftProducts.size()))
+                    .findFirst().ifPresent(randomGift ->
+                            checkoutItems.add(new CheckoutItem(
+                                    randomGift,
+                                    1,
+                                    0.0F)));
+
+        }
     }
 }

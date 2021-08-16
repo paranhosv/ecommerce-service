@@ -53,6 +53,25 @@ public class JsonProductsFileGatewayTests {
                 .findAll();
         assertThat(getProductsResult)
                 .usingRecursiveComparison()
-                .isEqualTo(List.of(randomProduct.toProduct()));
+                .isEqualTo(List.of(randomProduct.toProduct(false)));
+    }
+
+    @Test
+    public void getGiftsByIdShouldReturnProductsThatAreGifts() throws UnavailableDataException {
+        var jsonFileProducts = generator.objects(JsonFileProduct.class, 5).collect(toList());
+        var giftProducts = jsonFileProducts.stream()
+                .filter(i -> i.isGift)
+                .map(jsonFileProduct -> jsonFileProduct.toProduct(true))
+                .collect(toList());
+
+        given(repo.findAll()).willReturn(jsonFileProducts);
+        var getGiftsResult = gateway.getGifts();
+
+        then(repo)
+                .should(times(1))
+                .findAll();
+        assertThat(getGiftsResult)
+                .usingRecursiveComparison()
+                .isEqualTo(giftProducts);
     }
 }

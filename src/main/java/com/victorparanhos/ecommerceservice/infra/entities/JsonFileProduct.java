@@ -20,13 +20,23 @@ public class JsonFileProduct {
     @JsonProperty("is_gift")
     public boolean isGift;
 
-    public Product toProduct() {
+    public Product toProduct(boolean isGift) {
+        if(isGift) {
+            return new Product(
+                    id,
+                    title,
+                    description,
+                    0L,
+                    true
+            );
+        }
+
         return new Product(
                 id,
                 title,
                 description,
                 amount,
-                isGift
+                false
         );
     }
 }
