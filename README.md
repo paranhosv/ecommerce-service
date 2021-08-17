@@ -14,6 +14,26 @@ the purpose on the project.
 - docker
 - docker-compose
 
+### Configurations
+The configurations are flexible and can be changed in env vars (by default)
+or application.properties:
+- DT_BLACK_FRIDAY: Date or dates for Black Friday in format YYYY-MM-DD comma separated.
+- DISCOUNT_SERVICE_HOSTNAME: Discount service address in network;
+- DISCOUNT_SERVICE_PORT: Discount service port accepting requests;
+
+Examples:
+```
+DT_BLACK_FRIDAY=2021-11-26
+DISCOUNT_SERVICE_HOSTNAME=localhost
+DISCOUNT_SERVICE_PORT=50051
+```
+
+```
+DT_BLACK_FRIDAY=2021-11-26, 2022-11-25
+DISCOUNT_SERVICE_HOSTNAME=discount-service
+DISCOUNT_SERVICE_PORT=50051
+```
+
 #### Running the project
 Clone this repository and run the following commands on project root path:
 ```bash
