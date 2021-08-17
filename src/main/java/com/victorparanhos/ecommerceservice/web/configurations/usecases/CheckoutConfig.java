@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -32,13 +31,12 @@ public class CheckoutConfig {
         return new MakeCheckoutImpl(productsGateway, discountServiceGateway, loadBlackFridays());
     }
 
-    private Set<Date> loadBlackFridays() throws ParseException {
-        Set<Date> blackFridays = new HashSet<>();
+    private Set<LocalDate> loadBlackFridays() throws ParseException {
+        Set<LocalDate> blackFridays = new HashSet<>();
         var pattern = Pattern.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}");
         var matcher = pattern.matcher(dtBlackFriday);
-        var dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
         while (matcher.find()) {
-            blackFridays.add(dateFormatter.parse(matcher.group()));
+            blackFridays.add(LocalDate.parse(matcher.group()));
         }
 
         return blackFridays;

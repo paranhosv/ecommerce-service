@@ -13,7 +13,11 @@ import com.victorparanhos.ecommerceservice.applicationcore.gateways.ProductGatew
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import static java.util.stream.Collectors.*;
 
@@ -22,11 +26,11 @@ public class MakeCheckoutImpl implements MakeCheckout {
     private static final Logger logger = LoggerFactory.getLogger(MakeCheckoutImpl.class);
     private final ProductGateway productsGateway;
     private final DiscountServiceGateway discountServiceGateway;
-    private final Set<Date> blackFridays;
+    private final Set<LocalDate> blackFridays;
 
     public MakeCheckoutImpl(ProductGateway productsGateway,
                             DiscountServiceGateway discountServiceGateway,
-                            Set<Date> blackFridays) {
+                            Set<LocalDate> blackFridays) {
         this.productsGateway = productsGateway;
         this.discountServiceGateway = discountServiceGateway;
         this.blackFridays = blackFridays;
@@ -94,12 +98,7 @@ public class MakeCheckoutImpl implements MakeCheckout {
     }
 
     private void addGiftTo(Collection<CheckoutItem> checkoutItems) throws UnavailableDataException {
-        var calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        var today = calendar.getTime();
+        var today = LocalDate.now();
         if(blackFridays.contains(today)) {
             logger.info("Today is black friday! Adding a random gift if any available in stock!");
             Random rand = new Random();

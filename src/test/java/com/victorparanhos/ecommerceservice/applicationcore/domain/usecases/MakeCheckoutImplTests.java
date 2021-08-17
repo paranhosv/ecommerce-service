@@ -15,7 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,7 +33,7 @@ import static org.mockito.Mockito.times;
 public class MakeCheckoutImplTests {
     private final ProductGateway productGateway = mock(ProductGateway.class);
     private final DiscountServiceGateway discountServiceGateway = mock(DiscountServiceGateway.class);
-    private final Set<Date> blackFridays = new HashSet<>();
+    private final Set<LocalDate> blackFridays = new HashSet<>();
 
     private final MakeCheckoutImpl useCase = new MakeCheckoutImpl(productGateway, discountServiceGateway, blackFridays);
 
@@ -80,7 +83,7 @@ public class MakeCheckoutImplTests {
     @Test
     public void executeShouldReturnAllProductsAndGiftOnBlackFridays() throws UnavailableDataException,
             ProductNotFoundException, DiscountServerException, EmptyBasketException {
-        blackFridays.add(getTodayDate());
+        blackFridays.add(LocalDate.now());
         var expectedProductOne = new Product(1, "Title One", "Description One", 10_000L, false);
         var expectedProductTwo = new Product(2, "Title Two", "Description Two", 0L, true);
         given(productGateway.getProductsById(anyCollection())).willReturn(List.of(expectedProductOne));
@@ -245,14 +248,5 @@ public class MakeCheckoutImplTests {
         assertThatThrownBy(() ->
                 useCase.execute(cmd)
         ).isInstanceOf(EmptyBasketException.class);
-    }
-
-    private Date getTodayDate() {
-        var calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
     }
 }
